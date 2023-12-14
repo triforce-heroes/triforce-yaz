@@ -1,10 +1,10 @@
-import { BufferConsumer } from "@triforce-heroes/triforce-core";
+import { BufferConsumer, fatal, } from "@triforce-heroes/triforce-core";
 // Based on: https://github.com/ThemezerNX/Yaz0Lib
 export function decompress(buffer) {
     const bufferConsumer = new BufferConsumer(buffer, undefined, 1 /* ByteOrder.BIG_ENDIAN */);
     const yazMagic = bufferConsumer.readString(4);
     if (!["Yaz0", "Yaz1"].includes(yazMagic)) {
-        throw new Error("Invalid Yaz0 header");
+        fatal("Invalid Yaz0 header!");
     }
     const bufferLength = buffer.length;
     let bufferPosition = 17;

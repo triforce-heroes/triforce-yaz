@@ -84,13 +84,11 @@ function compressBuffer(buffer, level) {
     }
     return Buffer.from(resultArray);
 }
-export function compress(buffer, alignment = 0, level = 0 /* CompressionLevel.L0 */) {
+export function compress(buffer, level = 10 /* CompressionLevel.L10 */) {
     const compressed = compressBuffer(buffer, level);
-    const result = Buffer.allocUnsafe(16 + compressed.length);
+    const result = Buffer.alloc(16 + compressed.length);
     result.write("Yaz0", 0, 4);
     result.writeUInt32BE(buffer.length, 4);
-    result.writeUInt32BE(alignment, 8);
-    result.writeUInt32BE(0, 12);
     compressed.copy(result, 16);
     return result;
 }

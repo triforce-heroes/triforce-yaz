@@ -6,7 +6,7 @@ import { decompress } from "../src/Decompress.js";
 
 describe("decompressor", () => {
   const samples = [
-    ["hello", Buffer.from("Hello")],
+    ["hello", Buffer.from("Hello".repeat(1000))],
     ["license", Buffer.from(readFileSync(`LICENSE`))],
   ] as const;
 
