@@ -1,0 +1,27 @@
+{
+  "name": "@triforce-heroes/triforce-yaz",
+  "description": "Compress and decompress Yaz0 files.",
+  "version": "1.0.0",
+  "license": "Apache License 2.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p ./tsconfig.build.json",
+    "prettier": "prettier --check ./src",
+    "prettier:fix": "prettier --write ./src",
+    "eslint": "eslint ./src",
+    "eslint:fix": "eslint --fix ./src",
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "@rheactor/eslint-config-rheactor": "github:rheactor/eslint-config-rheactor",
+    "@triforce-heroes/triforce-core": "link:..\\triforce-core",
+    "@types/node": "^20.10.4",
+    "typescript": "^5.3.3",
+    "vitest": "^1.0.4"
+  }
+}
