@@ -1,14 +1,1 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { normalize } from "node:path";
-import { fatal } from "@triforce-heroes/triforce-core";
-import { decompress } from "../Decompress.js";
-export function DecompressCommand(input, output) {
-    if (!existsSync(input)) {
-        fatal(`File not found: ${input}`);
-    }
-    const outputPath = normalize(output ?? `${input}.uncompressed`);
-    process.stdout.write(`Decompressing ${normalize(input)} to ${outputPath}... `);
-    const result = decompress(readFileSync(input));
-    writeFileSync(outputPath, result);
-    process.stdout.write("OK\n");
-}
+import{existsSync as o,readFileSync as r,writeFileSync as e}from"node:fs";import{normalize as t}from"node:path";import{fatal as s}from"@triforce-heroes/triforce-core";import{decompress as m}from"../Decompress.js";export function DecompressCommand(p,i){o(p)||s(`File not found: ${p}`);let c=t(i??`${p}.uncompressed`);process.stdout.write(`Decompressing ${t(p)} to ${c}... `),e(c,m(r(p))),process.stdout.write("OK\n")}

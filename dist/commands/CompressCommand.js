@@ -1,14 +1,1 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { normalize } from "node:path";
-import { fatal } from "@triforce-heroes/triforce-core";
-import { compress } from "../Compress.js";
-export function CompressCommand(input, output, options) {
-    if (!existsSync(input)) {
-        fatal(`File not found: ${input}`);
-    }
-    const outputPath = normalize(output ?? `${input}.compressed`);
-    process.stdout.write(`Compressing ${normalize(input)} to ${outputPath}... `);
-    const result = compress(readFileSync(input), Number(options?.level ?? 10 /* CompressionLevel.L10 */));
-    writeFileSync(outputPath, result);
-    process.stdout.write("OK\n");
-}
+import{existsSync as o,readFileSync as r,writeFileSync as e}from"node:fs";import{normalize as t}from"node:path";import{fatal as s}from"@triforce-heroes/triforce-core";import{compress as m}from"../Compress.js";export function CompressCommand(p,i,f){o(p)||s(`File not found: ${p}`);let n=t(i??`${p}.compressed`);process.stdout.write(`Compressing ${t(p)} to ${n}... `),e(n,m(r(p),Number(f?.level??10))),process.stdout.write("OK\n")}
