@@ -8,6 +8,5 @@ export declare const enum CompressionLevel {
     L6 = 6,
     L7 = 7,
     L8 = 8,
-    L9 = 9,
-    L10 = 10
+    L9 = 9
 }

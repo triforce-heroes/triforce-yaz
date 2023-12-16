@@ -32,15 +32,11 @@ function compressionSearch(
     const buffer1 = buffer[bufferPosition]!;
 
     while (search < bufferPosition) {
-      const lastSearchRange = search;
+      search = buffer.indexOf(buffer1, search);
 
-      search = buffer.subarray(search, bufferPosition).indexOf(buffer1);
-
-      if (search === -1) {
+      if (search === -1 || search >= bufferPosition) {
         break;
       }
-
-      search += lastSearchRange;
 
       let cmp1 = search + 1;
       let cmp2 = bufferPosition + 1;
