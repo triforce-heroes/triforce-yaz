@@ -14,6 +14,7 @@ program
     Number.parseInt,
     9,
   )
+  .option("-w, --width <number>", "minimum output width", Number.parseInt)
   .action(CompressCommand);
 
 program

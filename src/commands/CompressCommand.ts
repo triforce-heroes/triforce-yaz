@@ -7,6 +7,7 @@ import { compress } from "../Compress.js";
 
 interface Options {
   level: number;
+  width?: number;
 }
 
 export function CompressCommand(
@@ -24,7 +25,18 @@ export function CompressCommand(
 
   const result = compress(readFileSync(input), options.level);
 
-  writeFileSync(outputPath, result);
+  writeFileSync(
+    outputPath,
+    Buffer.concat([
+      result,
+      Buffer.alloc(
+        Math.max(
+          0,
+          options.width === undefined ? 0 : options.width - result.length,
+        ),
+      ),
+    ]),
+  );
 
   process.stdout.write("OK\n");
 }
