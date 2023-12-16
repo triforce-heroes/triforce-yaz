@@ -8,7 +8,7 @@ program
   .description("compress to Yaz0 file")
   .argument("<input>", "file to be compressed")
   .argument("[output]", "output file")
-  .option("-l, --level", "compression level (0 to 10, default: 10)")
+  .option("-l, --level", "compression level (0..9)")
   .action(CompressCommand);
 
 program

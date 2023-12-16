@@ -25,7 +25,7 @@ export function CompressCommand(
 
   const result = compress(
     readFileSync(input),
-    Number(options?.level ?? CompressionLevel.L10),
+    Number(options?.level ?? CompressionLevel.L9),
   );
 
   writeFileSync(outputPath, result);

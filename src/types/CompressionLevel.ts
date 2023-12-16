@@ -9,5 +9,4 @@ export const enum CompressionLevel {
   L7,
   L8,
   L9,
-  L10,
 }

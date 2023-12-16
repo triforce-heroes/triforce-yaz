@@ -132,7 +132,7 @@ function compressBuffer(buffer: Buffer, level: number): Buffer {
   return Buffer.from(resultArray);
 }
 
-export function compress(buffer: Buffer, level = CompressionLevel.L10): Buffer {
+export function compress(buffer: Buffer, level = CompressionLevel.L9): Buffer {
   const compressed = compressBuffer(buffer, level);
   const result = Buffer.alloc(16 + compressed.length);
 
