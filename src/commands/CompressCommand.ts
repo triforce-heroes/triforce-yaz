@@ -4,16 +4,15 @@ import { normalize } from "node:path";
 import { fatal } from "@triforce-heroes/triforce-core";
 
 import { compress } from "../Compress.js";
-import { CompressionLevel } from "../types/CompressionLevel.js";
 
 interface Options {
-  level?: string;
+  level: number;
 }
 
 export function CompressCommand(
   input: string,
-  output?: string,
-  options?: Options,
+  output: string | undefined,
+  options: Options,
 ) {
   if (!existsSync(input)) {
     fatal(`File not found: ${input}`);
@@ -23,10 +22,7 @@ export function CompressCommand(
 
   process.stdout.write(`Compressing ${normalize(input)} to ${outputPath}... `);
 
-  const result = compress(
-    readFileSync(input),
-    Number(options?.level ?? CompressionLevel.L9),
-  );
+  const result = compress(readFileSync(input), options.level);
 
   writeFileSync(outputPath, result);
 

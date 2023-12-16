@@ -1,5 +1,5 @@
 interface Options {
-    level?: string;
+    level: number;
 }
-export declare function CompressCommand(input: string, output?: string, options?: Options): void;
+export declare function CompressCommand(input: string, output: string | undefined, options: Options): void;
 export {};
