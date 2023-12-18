@@ -12,53 +12,47 @@ function compressionSearch(
   let foundLength = 1;
   let found = 0;
 
-  if (!searchRange) {
-    return { found, foundLength };
+  let search = bufferPosition - searchRange;
+
+  if (search < 0) {
+    search = 0;
   }
 
-  if (bufferPosition + 2 < bufferLength) {
-    let search = bufferPosition - searchRange;
+  let cmpEnd = bufferPosition + bufferMaxLength;
 
-    if (search < 0) {
-      search = 0;
+  if (cmpEnd > bufferLength) {
+    cmpEnd = bufferLength;
+  }
+
+  const buffer1 = buffer[bufferPosition]!;
+
+  while (search < bufferPosition) {
+    search = buffer.indexOf(buffer1, search);
+
+    if (search === -1 || search >= bufferPosition) {
+      break;
     }
 
-    let cmpEnd = bufferPosition + bufferMaxLength;
+    let cmp1 = search + 1;
+    let cmp2 = bufferPosition + 1;
 
-    if (cmpEnd > bufferLength) {
-      cmpEnd = bufferLength;
+    while (cmp2 < cmpEnd && buffer[cmp1] === buffer[cmp2]) {
+      cmp1++;
+      cmp2++;
     }
 
-    const buffer1 = buffer[bufferPosition]!;
+    const len = cmp2 - bufferPosition;
 
-    while (search < bufferPosition) {
-      search = buffer.indexOf(buffer1, search);
+    if (foundLength < len) {
+      foundLength = len;
+      found = search;
 
-      if (search === -1 || search >= bufferPosition) {
+      if (foundLength === bufferMaxLength) {
         break;
       }
-
-      let cmp1 = search + 1;
-      let cmp2 = bufferPosition + 1;
-
-      while (cmp2 < cmpEnd && buffer[cmp1] === buffer[cmp2]) {
-        cmp1++;
-        cmp2++;
-      }
-
-      const len = cmp2 - bufferPosition;
-
-      if (foundLength < len) {
-        foundLength = len;
-        found = search;
-
-        if (foundLength === bufferMaxLength) {
-          break;
-        }
-      }
-
-      search++;
     }
+
+    search++;
   }
 
   return { found, foundLength };
@@ -92,36 +86,40 @@ function compressBuffer(buffer: Buffer, level: number): Buffer {
         break;
       }
 
-      const { found, foundLength } = compressionSearch(
-        buffer,
-        bufferPosition,
-        maxLen,
-        bufferLength,
-        searchRange,
-      );
+      if (searchRange && bufferPosition + 2 < bufferLength) {
+        const { found, foundLength } = compressionSearch(
+          buffer,
+          bufferPosition,
+          maxLen,
+          bufferLength,
+          searchRange,
+        );
 
-      if (foundLength > 2) {
-        const delta = bufferPosition - found - 1;
+        if (foundLength > 2) {
+          const delta = bufferPosition - found - 1;
 
-        if (foundLength < 0x12) {
-          resultArray.push(
-            (delta >> 8) | ((foundLength - 2) << 4),
-            delta & 0xff,
-          );
-        } else {
-          resultArray.push(
-            delta >> 8,
-            delta & 0xff,
-            (foundLength - 0x12) & 0xff,
-          );
+          if (foundLength < 0x12) {
+            resultArray.push(
+              (delta >> 8) | ((foundLength - 2) << 4),
+              delta & 0xff,
+            );
+          } else {
+            resultArray.push(
+              delta >> 8,
+              delta & 0xff,
+              (foundLength - 0x12) & 0xff,
+            );
+          }
+
+          bufferPosition += foundLength;
+
+          continue;
         }
-
-        bufferPosition += foundLength;
-      } else {
-        resultArray[resultPosition] |= 1 << (7 - i);
-        resultArray.push(buffer[bufferPosition]!);
-        bufferPosition++;
       }
+
+      resultArray[resultPosition] |= 1 << (7 - i);
+      resultArray.push(buffer[bufferPosition]!);
+      bufferPosition++;
     }
   }
 

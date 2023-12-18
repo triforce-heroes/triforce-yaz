@@ -1,7 +1,6 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { normalize } from "node:path";
+import fs, { existsSync, readFileSync } from "node:fs";
 
-import { fatal } from "@triforce-heroes/triforce-core";
+import { fatal, normalize } from "@triforce-heroes/triforce-core";
 
 import { decompress } from "../Decompress.js";
 
@@ -18,7 +17,7 @@ export function DecompressCommand(input: string, output?: string) {
 
   const result = decompress(readFileSync(input));
 
-  writeFileSync(outputPath, result);
+  fs.writeFileSync(outputPath, result);
 
   process.stdout.write("OK\n");
 }

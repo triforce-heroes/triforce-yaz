@@ -1,13 +1,13 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import fs, { existsSync, readFileSync } from "node:fs";
 import { normalize } from "node:path";
 
-import { fatal } from "@triforce-heroes/triforce-core";
+import * as core from "@triforce-heroes/triforce-core";
 
 import { compress } from "../Compress.js";
 
 interface Options {
   level: number;
-  width?: number;
+  width: number;
 }
 
 export function CompressCommand(
@@ -16,7 +16,7 @@ export function CompressCommand(
   options: Options,
 ) {
   if (!existsSync(input)) {
-    fatal(`File not found: ${input}`);
+    core.fatal(`File not found: ${input}`);
   }
 
   const outputPath = normalize(output ?? `${input}.compressed`);
@@ -25,16 +25,11 @@ export function CompressCommand(
 
   const result = compress(readFileSync(input), options.level);
 
-  writeFileSync(
+  fs.writeFileSync(
     outputPath,
     Buffer.concat([
       result,
-      Buffer.alloc(
-        Math.max(
-          0,
-          options.width === undefined ? 0 : options.width - result.length,
-        ),
-      ),
+      Buffer.alloc(Math.max(0, options.width - result.length)),
     ]),
   );
 
