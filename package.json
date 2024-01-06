@@ -9,6 +9,9 @@
   "files": [
     "dist"
   ],
+  "bin": {
+    "triforce-yaz": "dist/command.js"
+  },
   "scripts": {
     "build": "rimraf ./dist && tsc -p ./tsconfig.build.json && swc ./dist -d ./dist",
     "yaz": "node ./dist/command.js",
