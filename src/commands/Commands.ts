@@ -12,7 +12,7 @@ export function makeProgram() {
     .argument("<input>", "file to be compressed")
     .argument("[output]", "output file")
     .option("-l, --level <number>", "compression level (0..9)", Number, 9)
-    .option("-w, --width <number>", "minimum output width", Number)
+    .option("-w, --width <number>", "minimum output width", Number, 0)
     .action(CompressCommand);
 
   program
