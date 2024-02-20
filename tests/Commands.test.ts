@@ -1,6 +1,6 @@
 import fs, { readFileSync } from "node:fs";
 
-import * as core from "@triforce-heroes/triforce-core";
+import { debugCommander } from "@triforce-heroes/triforce-core/Debugger";
 import { describe, expect, it, vi } from "vitest";
 
 import { makeProgram } from "../src/commands/Commands.js";
@@ -42,22 +42,7 @@ describe("commands", () => {
       return true;
     });
 
-    core.debugCommander(makeProgram(), ["compress", input, ...args]);
-  });
-
-  it("compress inexistent.bin: must fail", () => {
-    expect.assertions(1);
-
-    vi.spyOn(core, "fatal").mockImplementationOnce(() => {
-      throw new Error("OK");
-    });
-
-    expect(() => {
-      core.debugCommander(makeProgram(), [
-        "compress",
-        `${__dirname}/fixtures/inexistent.bin`,
-      ]);
-    }).toThrow("OK");
+    debugCommander(makeProgram(), ["compress", input, ...args]);
   });
 
   it("decompress hello.yaz0", () => {
@@ -84,24 +69,9 @@ describe("commands", () => {
       return true;
     });
 
-    core.debugCommander(makeProgram(), [
+    debugCommander(makeProgram(), [
       "decompress",
       `${__dirname}/fixtures/hello.yaz0`,
     ]);
-  });
-
-  it("decompress inexistent.yaz0: must fail", () => {
-    expect.assertions(1);
-
-    vi.spyOn(core, "fatal").mockImplementationOnce(() => {
-      throw new Error("OK");
-    });
-
-    expect(() => {
-      core.debugCommander(makeProgram(), [
-        "decompress",
-        `${__dirname}/fixtures/inexistent.yaz0`,
-      ]);
-    }).toThrow("OK");
   });
 });

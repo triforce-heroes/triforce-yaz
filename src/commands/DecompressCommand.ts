@@ -1,6 +1,7 @@
 import fs, { existsSync, readFileSync } from "node:fs";
 
-import { fatal, normalize } from "@triforce-heroes/triforce-core";
+import { fatal } from "@triforce-heroes/triforce-core/Console";
+import { normalize } from "@triforce-heroes/triforce-core/Path";
 
 import { decompress } from "../Decompress.js";
 

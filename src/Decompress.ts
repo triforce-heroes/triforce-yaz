@@ -1,4 +1,4 @@
-import { fatal } from "@triforce-heroes/triforce-core";
+import { fatal } from "@triforce-heroes/triforce-core/Console";
 
 // Based on: https://github.com/ThemezerNX/Yaz0Lib
 

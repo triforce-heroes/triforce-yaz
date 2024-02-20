@@ -1,7 +1,7 @@
 import fs, { existsSync, readFileSync } from "node:fs";
 import { normalize } from "node:path";
 
-import * as core from "@triforce-heroes/triforce-core";
+import { fatal } from "@triforce-heroes/triforce-core/Console";
 
 import { compress } from "../Compress.js";
 
@@ -16,7 +16,7 @@ export function CompressCommand(
   options: Options,
 ) {
   if (!existsSync(input)) {
-    core.fatal(`File not found: ${input}`);
+    fatal(`File not found: ${input}`);
   }
 
   const outputPath = normalize(output ?? `${input}.compressed`);
