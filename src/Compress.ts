@@ -27,9 +27,16 @@ function compressionSearch(
   const buffer1 = buffer[bufferPosition]!;
 
   while (search < bufferPosition) {
-    search = buffer.indexOf(buffer1, search);
+    let searchMatch = false;
 
-    if (search === -1 || search >= bufferPosition) {
+    for (; search < bufferPosition; search++) {
+      if (buffer[search] === buffer1) {
+        searchMatch = true;
+        break;
+      }
+    }
+
+    if (!searchMatch) {
       break;
     }
 
