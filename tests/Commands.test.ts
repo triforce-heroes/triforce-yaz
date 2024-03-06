@@ -30,7 +30,7 @@ describe("commands", () => {
         return true;
       })
       .mockImplementationOnce((str) => {
-        expect(str).toBe("OK\n");
+        expect(str).toContain("OK (");
 
         return true;
       });
@@ -55,7 +55,7 @@ describe("commands", () => {
         return true;
       })
       .mockImplementationOnce((str) => {
-        expect(str).toBe("OK\n");
+        expect(str).toContain("OK (");
 
         return true;
       });

@@ -16,9 +16,11 @@ export function DecompressCommand(input: string, output?: string) {
     `Decompressing ${normalize(input)} to ${outputPath}... `,
   );
 
+  const now = Date.now();
+
   const result = decompress(readFileSync(input));
 
   fs.writeFileSync(outputPath, result);
 
-  process.stdout.write("OK\n");
+  process.stdout.write(`OK (${((Date.now() - now) / 1000).toFixed(2)}s)\n`);
 }

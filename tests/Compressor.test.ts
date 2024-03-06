@@ -9,7 +9,11 @@ describe("compressor", () => {
   const helloBuffer = readFileSync(`${__dirname}/fixtures/hello.bin`);
   const loremBuffer = readFileSync(`${__dirname}/fixtures/lorem.bin`);
 
-  const samples = [
+  const coverage1 = readFileSync(`${__dirname}/fixtures/coverage-1.bin`);
+  const coverage2 = readFileSync(`${__dirname}/fixtures/coverage-2.bin`);
+  const coverage3 = readFileSync(`${__dirname}/fixtures/coverage-3.bin`);
+
+  const fileSamples = [
     ["empty.yaz0", CompressionLevel.L0, Buffer.from("")],
     ["hello.yaz0", CompressionLevel.L0, helloBuffer],
     ["hello.l1.yaz0", CompressionLevel.L1, helloBuffer],
@@ -31,14 +35,34 @@ describe("compressor", () => {
     ["lorem.l7.yaz0", CompressionLevel.L7, loremBuffer],
     ["lorem.l8.yaz0", CompressionLevel.L8, loremBuffer],
     ["lorem.l9.yaz0", CompressionLevel.L9, loremBuffer],
-    ["coverage-1.yaz0", CompressionLevel.L9, Buffer.from("\0\0\0\0")],
-    ["coverage-2.yaz0", CompressionLevel.L9, Buffer.from("\0".repeat(19))],
-    ["coverage-3.yaz0", CompressionLevel.L0, Buffer.from("\0".repeat(8))],
+    ["coverage-1.yaz0", CompressionLevel.L9, coverage1],
+    ["coverage-2.yaz0", CompressionLevel.L9, coverage2],
+    ["coverage-3.yaz0", CompressionLevel.L0, coverage3],
   ] as const;
 
-  it.each(samples)("function compress(%s)", (name, level, buffer) => {
-    expect(compress(buffer, level)).toStrictEqual(
-      readFileSync(`${__dirname}/fixtures/${name}`),
-    );
-  });
+  it.each(fileSamples)(
+    "function compress(file: %j, %j)",
+    (name, level, buffer) => {
+      expect(compress(buffer, level)).toStrictEqual(
+        readFileSync(`${__dirname}/fixtures/${name}`),
+      );
+    },
+  );
+
+  const directSamples = [
+    ["", CompressionLevel.L9, ""],
+    ["1", CompressionLevel.L9, "\u00801"],
+    ["12", CompressionLevel.L9, "\u00C012"],
+    ["123", CompressionLevel.L9, "\u00E0123"],
+    ["1234", CompressionLevel.L9, "\u00F01234"],
+  ] as const;
+
+  it.each(directSamples)(
+    "function compress(buffer: %j, %j)",
+    (buffer, level, expected) => {
+      expect(
+        compress(Buffer.from(buffer, "binary"), level).subarray(16),
+      ).toStrictEqual(Buffer.from(expected, "binary"));
+    },
+  );
 });

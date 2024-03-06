@@ -23,6 +23,8 @@ export function CompressCommand(
 
   process.stdout.write(`Compressing ${normalize(input)} to ${outputPath}... `);
 
+  const now = Date.now();
+
   const result = compress(readFileSync(input), options.level);
 
   fs.writeFileSync(
@@ -33,5 +35,5 @@ export function CompressCommand(
     ]),
   );
 
-  process.stdout.write("OK\n");
+  process.stdout.write(`OK (${((Date.now() - now) / 1000).toFixed(2)}s)\n`);
 }

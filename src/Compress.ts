@@ -1,146 +1,170 @@
-// Based on: https://github.com/ThemezerNX/Yaz0Lib
-
 import { CompressionLevel } from "./types/CompressionLevel.js";
 
-function compressionSearch(
-  buffer: Buffer,
-  bufferPosition: number,
-  bufferMaxLength: number,
-  bufferLength: number,
-  searchRange: number,
-) {
-  let foundLength = 1;
-  let found = 0;
+function compressBufferZero(buffer: Buffer) {
+  const resultCycles = Math.ceil(buffer.length / 8);
+  const resultBuffer = Buffer.alloc(resultCycles + buffer.length, 0xff);
 
-  let search = bufferPosition - searchRange;
-
-  if (search < 0) {
-    search = 0;
+  for (let resultCycle = 0; resultCycle < resultCycles; resultCycle++) {
+    buffer.copy(
+      resultBuffer,
+      resultCycle * 9 + 1,
+      resultCycle * 8,
+      (resultCycle + 1) * 8,
+    );
   }
 
-  let cmpEnd = bufferPosition + bufferMaxLength;
+  const resultMissing = resultCycles * 8 - buffer.length;
 
-  if (cmpEnd > bufferLength) {
-    cmpEnd = bufferLength;
+  if (resultMissing) {
+    resultBuffer[(resultCycles - 1) * 9] = 0xff << resultMissing;
   }
 
-  const buffer1 = buffer[bufferPosition]!;
-
-  while (search < bufferPosition) {
-    let searchMatch = false;
-
-    for (; search < bufferPosition; search++) {
-      if (buffer[search] === buffer1) {
-        searchMatch = true;
-        break;
-      }
-    }
-
-    if (!searchMatch) {
-      break;
-    }
-
-    let cmp1 = search + 1;
-    let cmp2 = bufferPosition + 1;
-
-    while (cmp2 < cmpEnd && buffer[cmp1] === buffer[cmp2]) {
-      cmp1++;
-      cmp2++;
-    }
-
-    const len = cmp2 - bufferPosition;
-
-    if (foundLength < len) {
-      foundLength = len;
-      found = search;
-
-      if (foundLength === bufferMaxLength) {
-        break;
-      }
-    }
-
-    search++;
-  }
-
-  return { found, foundLength };
+  return resultBuffer;
 }
 
-function compressBuffer(buffer: Buffer, level: number): Buffer {
-  let searchRange;
+function compressBuffer(buffer: Buffer, searchRange: number): Buffer {
+  const resultInstances: number[][] = [];
+  let resultBytes = 0;
 
-  if (!level) {
-    searchRange = 0;
-  } else if (level < 9) {
-    searchRange = (0x10_e0 * level) / 9 - 0x0_e0;
-  } else {
-    searchRange = 0x10_00;
-  }
+  let bufferPosition = buffer.length - 1;
 
-  const bufferLength = buffer.length;
-  let bufferPosition = 0;
+  bufferAdvance: while (bufferPosition >= 0) {
+    const bufferPosition2 = bufferPosition - 2;
 
-  const resultArray = new Array<number>();
-  let resultPosition = 0;
+    if (bufferPosition2 > 0) {
+      const bufferPosition1 = bufferPosition - 1;
 
-  const maxLen = 0x1_11;
+      for (
+        let foundDistance = 1;
+        foundDistance <= searchRange;
+        foundDistance++
+      ) {
+        if (bufferPosition - foundDistance < 0) {
+          break;
+        }
 
-  while (bufferPosition < bufferLength) {
-    resultPosition = resultArray.length;
-    resultArray.push(0);
+        if (
+          buffer[bufferPosition] === buffer[bufferPosition - foundDistance] &&
+          buffer[bufferPosition1] === buffer[bufferPosition1 - foundDistance] &&
+          buffer[bufferPosition2] === buffer[bufferPosition2 - foundDistance]
+        ) {
+          let foundLength = 3;
 
-    for (let i = 0; i < 8; i++) {
-      if (bufferPosition >= bufferLength) {
-        break;
-      }
+          bufferPosition -= 3;
 
-      if (searchRange && bufferPosition + 2 < bufferLength) {
-        const { found, foundLength } = compressionSearch(
-          buffer,
-          bufferPosition,
-          maxLen,
-          bufferLength,
-          searchRange,
-        );
+          for (; foundLength < 273; foundLength++) {
+            if (
+              bufferPosition === 0 ||
+              buffer[bufferPosition] !== buffer[bufferPosition - foundDistance]
+            ) {
+              break;
+            }
 
-        if (foundLength > 2) {
-          const delta = bufferPosition - found - 1;
-
-          if (foundLength < 0x12) {
-            resultArray.push(
-              (delta >> 8) | ((foundLength - 2) << 4),
-              delta & 0xff,
-            );
-          } else {
-            resultArray.push(
-              delta >> 8,
-              delta & 0xff,
-              (foundLength - 0x12) & 0xff,
-            );
+            bufferPosition--;
           }
 
-          bufferPosition += foundLength;
+          foundDistance--;
 
-          continue;
+          if (foundLength < 0x12) {
+            resultBytes += 2;
+            resultInstances.push([
+              (foundDistance >> 8) | ((foundLength - 2) << 4),
+              foundDistance & 0xff,
+            ]);
+          } else {
+            resultBytes += 3;
+            resultInstances.push([
+              foundDistance >> 8,
+              foundDistance & 0xff,
+              foundLength - 0x12,
+            ]);
+          }
+
+          continue bufferAdvance;
         }
       }
-
-      resultArray[resultPosition] |= 1 << (7 - i);
-      resultArray.push(buffer[bufferPosition]!);
-      bufferPosition++;
     }
+
+    resultBytes++;
+    resultInstances.push([buffer[bufferPosition--]!]);
   }
 
-  return Buffer.from(resultArray);
+  let resultPosition = 0;
+  let resultHeaderPosition = 0;
+
+  const resultBuffer = Buffer.allocUnsafe(
+    Math.ceil(resultInstances.length / 8) + resultBytes,
+  );
+
+  for (
+    let resultInstancesIndex = 0;
+    resultInstancesIndex < resultInstances.length;
+    resultInstancesIndex++
+  ) {
+    const resultInstance =
+      resultInstances[resultInstances.length - resultInstancesIndex - 1]!;
+    const resultHeader = resultInstancesIndex % 8 === 0;
+
+    if (resultHeader) {
+      resultBuffer.writeUInt8(0, resultPosition);
+      resultHeaderPosition = resultPosition++;
+    }
+
+    if (resultInstance.length === 1) {
+      resultBuffer.writeUInt8(resultInstance[0]!, resultPosition);
+      resultBuffer[resultHeaderPosition] |=
+        1 << (7 - (resultInstancesIndex % 8));
+    } else if (resultInstance.length === 2) {
+      resultBuffer.writeUInt16BE(
+        (resultInstance[0]! << 8) | resultInstance[1]!,
+        resultPosition,
+      );
+    } else {
+      resultBuffer.writeUIntBE(
+        (resultInstance[0]! << 16) |
+          (resultInstance[1]! << 8) |
+          resultInstance[2]!,
+        resultPosition,
+        3,
+      );
+    }
+
+    resultPosition += resultInstance.length;
+  }
+
+  return resultBuffer;
 }
 
 export function compress(buffer: Buffer, level = CompressionLevel.L9): Buffer {
-  const compressed = compressBuffer(buffer, level);
-  const result = Buffer.alloc(16 + compressed.length);
+  if (buffer.length === 0) {
+    return Buffer.from("Yaz0\0\0\0\0\0\0\0\0\0\0\0\0");
+  }
 
-  result.write("Yaz0", 0, 4);
-  result.writeUInt32BE(buffer.length, 4);
+  const compressedLength = Buffer.allocUnsafe(4);
 
-  compressed.copy(result, 16);
+  compressedLength.writeUInt32BE(buffer.length);
 
-  return result;
+  if (buffer.length < 4) {
+    return Buffer.concat([
+      Buffer.from("Yaz0"),
+      compressedLength,
+      Buffer.alloc(8),
+      Buffer.from([0xff << (8 - buffer.length)]),
+      buffer,
+    ]);
+  }
+
+  const compressed = +level
+    ? compressBuffer(
+        buffer,
+        +level < 9 ? (0x10_e0 * level) / 9 - 0xe0 : 0x10_00,
+      )
+    : compressBufferZero(buffer);
+
+  return Buffer.concat([
+    Buffer.from("Yaz0"),
+    compressedLength,
+    Buffer.alloc(8),
+    compressed,
+  ]);
 }
