@@ -16,6 +16,7 @@ describe("decompressor", () => {
   const coverage1 = readFileSync(`${__dirname}/fixtures/coverage-1.bin`);
   const coverage2 = readFileSync(`${__dirname}/fixtures/coverage-2.bin`);
   const coverage3 = readFileSync(`${__dirname}/fixtures/coverage-3.bin`);
+  const coverage4 = readFileSync(`${__dirname}/fixtures/coverage-4.bin`);
 
   const fileSamples = [
     ["empty.yaz0", Buffer.from("")],
@@ -42,6 +43,7 @@ describe("decompressor", () => {
     ["coverage-1.yaz0", coverage1],
     ["coverage-2.yaz0", coverage2],
     ["coverage-3.yaz0", coverage3],
+    ["coverage-4.yaz0", coverage4],
   ] as const;
 
   it.each(fileSamples)("function decompress(file: %j)", (name, buffer) => {
@@ -55,9 +57,18 @@ describe("decompressor", () => {
     ["\u00801", "1"],
     ["\u00C012", "12"],
     ["\u00E0123", "123"],
+    ["\u00F01234", "1234"],
     [
       "\u00A0\u0000\u0010\u0000\u0001\u0030\u0003\u0010\u0008",
       "\u0000\u0000\u0000\u0000\u0001\u0000\u0000\u0000\u0001\u0000\u0000\u0000\u0000",
+    ],
+    [
+      "\u00A0\u0000\u0010\u0000\u0001\u0030\u0003\u0010\u0000",
+      "\u0000\u0000\u0000\u0000\u0001\u0000\u0000\u0000\u0001\u0000\u0000\u0000\u0000",
+    ],
+    [
+      "\u00A4\u0000\u0010\u0000\u0001\u0030\u0003\u0010\u0000\u0002",
+      "\u0000\u0000\u0000\u0000\u0001\u0000\u0000\u0000\u0001\u0000\u0000\u0000\u0000\u0002",
     ],
     [
       "\u00A8\u0000\u0010\u0000\u0001\u0050\u0003\u0000",

@@ -35,59 +35,71 @@ function compressBuffer(buffer: Buffer, searchRange: number): Buffer {
 
   let bufferPosition = buffer.length - 1;
 
-  bufferAdvance: while (bufferPosition >= 0) {
-    const bufferPosition2 = bufferPosition - 2;
+  let bestFoundDistance = 0;
 
-    if (bufferPosition2 > 0) {
-      const bufferPosition1 = bufferPosition - 1;
+  while (bufferPosition >= 0) {
+    if (bufferPosition < 3) {
+      resultBytes.push([buffer[bufferPosition--]!]);
 
-      for (
-        let foundDistance = 1;
-        foundDistance <= searchRange;
-        foundDistance++
-      ) {
-        if (bufferPosition - foundDistance < 0) {
-          break;
-        }
+      if (bufferPosition >= 0) {
+        resultBytes.push([buffer[bufferPosition--]!]);
 
-        if (
-          buffer[bufferPosition] === buffer[bufferPosition - foundDistance] &&
-          buffer[bufferPosition1] === buffer[bufferPosition1 - foundDistance] &&
-          buffer[bufferPosition2] === buffer[bufferPosition2 - foundDistance]
-        ) {
-          let foundLength = 3;
-
-          bufferPosition -= 3;
-
-          for (; foundLength < 273; foundLength++) {
-            if (
-              bufferPosition === 0 ||
-              buffer[bufferPosition] !== buffer[bufferPosition - foundDistance]
-            ) {
-              break;
-            }
-
-            bufferPosition--;
-          }
-
-          foundDistance--;
-
-          if (foundLength < 0x12) {
-            resultBytes.push([
-              (foundDistance >> 8) | ((foundLength - 2) << 4),
-              foundDistance & 0xff,
-            ]);
-          } else {
-            resultBytes.push([
-              foundDistance >> 8,
-              foundDistance & 0xff,
-              foundLength - 0x12,
-            ]);
-          }
-
-          continue bufferAdvance;
+        if (bufferPosition >= 0) {
+          resultBytes.push([buffer[bufferPosition--]!]);
         }
       }
+
+      break;
+    }
+
+    const bufferPosition2 = bufferPosition - 2;
+    const bufferPosition1 = bufferPosition - 1;
+
+    let bestFoundLength = 0;
+
+    for (
+      let foundDistance = 1;
+      foundDistance <= searchRange && bufferPosition - foundDistance;
+      foundDistance++
+    ) {
+      if (
+        buffer[bufferPosition] !== buffer[bufferPosition - foundDistance] ||
+        buffer[bufferPosition1] !== buffer[bufferPosition1 - foundDistance] ||
+        buffer[bufferPosition2] !== buffer[bufferPosition2 - foundDistance]
+      ) {
+        continue;
+      }
+
+      let foundLength = 3;
+
+      while (
+        foundLength < 273 &&
+        bufferPosition - foundLength &&
+        buffer[bufferPosition - foundLength] ===
+          buffer[bufferPosition - foundLength - foundDistance]
+      ) {
+        foundLength++;
+      }
+
+      if (foundLength > bestFoundLength) {
+        bestFoundLength = foundLength;
+        bestFoundDistance = foundDistance - 1;
+      }
+    }
+
+    if (bestFoundLength) {
+      bufferPosition -= bestFoundLength;
+
+      const byte1 = bestFoundDistance >> 8;
+      const byte2 = bestFoundDistance & 0xff;
+
+      resultBytes.push(
+        bestFoundLength < 0x12
+          ? [byte1 | ((bestFoundLength - 2) << 4), byte2]
+          : [byte1, byte2, bestFoundLength - 0x12],
+      );
+
+      continue;
     }
 
     resultBytes.push([buffer[bufferPosition--]!]);

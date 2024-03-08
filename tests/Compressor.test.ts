@@ -12,6 +12,7 @@ describe("compressor", () => {
   const coverage1 = readFileSync(`${__dirname}/fixtures/coverage-1.bin`);
   const coverage2 = readFileSync(`${__dirname}/fixtures/coverage-2.bin`);
   const coverage3 = readFileSync(`${__dirname}/fixtures/coverage-3.bin`);
+  const coverage4 = readFileSync(`${__dirname}/fixtures/coverage-4.bin`);
 
   const fileSamples = [
     ["empty.yaz0", CompressionLevel.L0, Buffer.from("")],
@@ -38,6 +39,7 @@ describe("compressor", () => {
     ["coverage-1.yaz0", CompressionLevel.L9, coverage1],
     ["coverage-2.yaz0", CompressionLevel.L9, coverage2],
     ["coverage-3.yaz0", CompressionLevel.L0, coverage3],
+    ["coverage-4.yaz0", CompressionLevel.L9, coverage4],
   ] as const;
 
   it.each(fileSamples)(
@@ -55,6 +57,11 @@ describe("compressor", () => {
     ["12", CompressionLevel.L9, "\u00C012"],
     ["123", CompressionLevel.L9, "\u00E0123"],
     ["1234", CompressionLevel.L9, "\u00F01234"],
+    [
+      "\u0000\u0000\u0000\u0000\u0001\u0000\u0000\u0000\u0001\u0000\u0000\u0000\u0000",
+      CompressionLevel.L9,
+      "\u00A0\u0000\u0010\u0000\u0001\u0020\u0003\u0020\u0008",
+    ],
   ] as const;
 
   it.each(directSamples)(
