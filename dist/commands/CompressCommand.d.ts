@@ -1,5 +1,6 @@
 interface Options {
     level: number;
+    searchRange?: number;
     width: number;
     fast: boolean;
 }

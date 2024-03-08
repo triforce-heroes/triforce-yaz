@@ -45,7 +45,7 @@ describe("compressor", () => {
   it.each(fileSamples)(
     "function compress(file: %j, %j)",
     (name, level, buffer) => {
-      expect(compress(buffer, level)).toStrictEqual(
+      expect(compress(buffer, { level })).toStrictEqual(
         readFileSync(`${__dirname}/fixtures/${name}`),
       );
     },
@@ -83,7 +83,7 @@ describe("compressor", () => {
     "function compress(buffer: %j, %j)",
     (buffer, level, expected) => {
       expect(
-        compress(Buffer.from(buffer, "binary"), level).subarray(16),
+        compress(Buffer.from(buffer, "binary"), { level }).subarray(16),
       ).toStrictEqual(Buffer.from(expected, "binary"));
     },
   );

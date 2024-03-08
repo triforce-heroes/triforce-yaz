@@ -174,10 +174,15 @@ function compressBuffer(
   return Buffer.from(resultArray);
 }
 
+interface CompressOptions {
+  level?: CompressionLevel;
+  searchRange?: number;
+  fast?: boolean;
+}
+
 export function compress(
   buffer: Buffer,
-  level = CompressionLevel.L9,
-  fast = false,
+  options: CompressOptions = {},
 ): Buffer {
   const bufferHeader = Buffer.from(YAZ_HEADER);
 
@@ -195,14 +200,29 @@ export function compress(
     ]);
   }
 
+  const compressOptions = {
+    level: CompressionLevel.L9,
+    fast: false,
+    ...options,
+  };
+
+  if (
+    compressOptions.level === CompressionLevel.L0 ||
+    Number(compressOptions.searchRange) <= 1
+  ) {
+    return Buffer.concat([bufferHeader, compressBufferZero(buffer)]);
+  }
+
+  const searchRange =
+    compressOptions.searchRange !== undefined &&
+    compressOptions.searchRange <= 0x10_00
+      ? compressOptions.searchRange
+      : +compressOptions.level < 9
+        ? (0x10_e0 * compressOptions.level) / 9 - 0xe0
+        : 0x10_00;
+
   return Buffer.concat([
     bufferHeader,
-    +level
-      ? compressBuffer(
-          buffer,
-          +level < 9 ? (0x10_e0 * level) / 9 - 0xe0 : 0x10_00,
-          fast,
-        )
-      : compressBufferZero(buffer),
+    compressBuffer(buffer, searchRange, compressOptions.fast),
   ]);
 }
