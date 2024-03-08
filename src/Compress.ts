@@ -1,22 +1,30 @@
 import { CompressionLevel } from "./types/CompressionLevel.js";
 
+const YAZ_HEADER = Buffer.from("Yaz0\0\0\0\0\0\0\0\0\0\0\0\0", "binary");
+
 function compressBufferZero(buffer: Buffer) {
-  const resultCycles = Math.ceil(buffer.length / 8);
-  const resultBuffer = Buffer.alloc(resultCycles + buffer.length, 0xff);
+  let resultPosition = 0;
+  const resultBuffer = Buffer.alloc(
+    Math.ceil(buffer.length / 8) + buffer.length,
+  );
 
-  for (let resultCycle = 0; resultCycle < resultCycles; resultCycle++) {
-    buffer.copy(
-      resultBuffer,
-      resultCycle * 9 + 1,
-      resultCycle * 8,
-      (resultCycle + 1) * 8,
-    );
-  }
+  let bufferPosition = 0;
 
-  const resultMissing = resultCycles * 8 - buffer.length;
+  while (bufferPosition < buffer.length) {
+    if (bufferPosition % 8 === 0) {
+      resultBuffer[resultPosition++] =
+        bufferPosition + 7 < buffer.length
+          ? 0xff
+          : 0xff << (8 - (buffer.length - bufferPosition));
+    }
 
-  if (resultMissing) {
-    resultBuffer[(resultCycles - 1) * 9] = 0xff << resultMissing;
+    for (
+      let bufferPositionIndex = 0;
+      bufferPositionIndex < 8 && bufferPosition < buffer.length;
+      bufferPositionIndex++
+    ) {
+      resultBuffer[resultPosition++] = buffer[bufferPosition++]!;
+    }
   }
 
   return resultBuffer;
@@ -136,35 +144,29 @@ function compressBuffer(buffer: Buffer, searchRange: number): Buffer {
 }
 
 export function compress(buffer: Buffer, level = CompressionLevel.L9): Buffer {
+  const bufferHeader = Buffer.from(YAZ_HEADER);
+
   if (buffer.length === 0) {
-    return Buffer.from("Yaz0\0\0\0\0\0\0\0\0\0\0\0\0");
+    return bufferHeader;
   }
 
-  const compressedLength = Buffer.allocUnsafe(4);
-
-  compressedLength.writeUInt32BE(buffer.length);
+  bufferHeader.writeUInt32BE(buffer.length, 4);
 
   if (buffer.length < 4) {
     return Buffer.concat([
-      Buffer.from("Yaz0"),
-      compressedLength,
-      Buffer.alloc(8),
+      bufferHeader,
       Buffer.from([0xff << (8 - buffer.length)]),
       buffer,
     ]);
   }
 
-  const compressed = +level
-    ? compressBuffer(
-        buffer,
-        +level < 9 ? (0x10_e0 * level) / 9 - 0xe0 : 0x10_00,
-      )
-    : compressBufferZero(buffer);
-
   return Buffer.concat([
-    Buffer.from("Yaz0"),
-    compressedLength,
-    Buffer.alloc(8),
-    compressed,
+    bufferHeader,
+    +level
+      ? compressBuffer(
+          buffer,
+          +level < 9 ? (0x10_e0 * level) / 9 - 0xe0 : 0x10_00,
+        )
+      : compressBufferZero(buffer),
   ]);
 }
