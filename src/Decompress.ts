@@ -1,64 +1,40 @@
-import { fatal } from "@triforce-heroes/triforce-core/Console";
-
-// Based on: https://github.com/ThemezerNX/Yaz0Lib
-
 export function decompress(buffer: Buffer) {
-  const yazMagic = buffer.toString("binary", 0, 4);
-
-  if (!["Yaz0", "Yaz1"].includes(yazMagic)) {
-    fatal("Invalid Yaz0 header!");
-  }
-
   const bufferLength = buffer.length;
-  let bufferPosition = 17;
+  let bufferPosition = 16;
+  let bufferHeader;
 
-  const resultLength = buffer.readUInt32BE(4);
-  const resultBuffer = Buffer.allocUnsafe(resultLength);
-  let resultPosition = 0;
+  const resultArray: number[] = [];
 
-  let bufferCode = buffer.at(16)!;
+  while (bufferPosition < bufferLength) {
+    bufferHeader = buffer[bufferPosition++]!;
 
-  loop: while (bufferPosition < bufferLength && resultPosition < resultLength) {
-    for (let i = 0; i < 8; i++) {
-      if (bufferPosition >= bufferLength || resultPosition >= resultLength) {
-        break loop;
+    for (
+      let bufferHeaderPosition = 0;
+      bufferHeaderPosition < 8 && bufferPosition < bufferLength;
+      bufferHeaderPosition++
+    ) {
+      if ((bufferHeader << bufferHeaderPosition) & 0x80) {
+        resultArray[resultArray.length] = buffer[bufferPosition++]!;
+
+        continue;
       }
 
-      if (bufferCode & 0x80) {
-        resultBuffer[resultPosition] = buffer[bufferPosition]!;
-        resultPosition++;
-        bufferPosition++;
-      } else {
-        const buffer1 = buffer[bufferPosition++]!;
-        const buffer2 = buffer[bufferPosition++]!;
+      const byte1 = buffer[bufferPosition++]!;
+      const byte2 = buffer[bufferPosition++]!;
 
-        let copySrc = resultPosition - (((buffer1 & 0x0f) << 8) | buffer2) - 1;
-        let bufferNumber = buffer1 >> 4;
+      const copyDistance = (((byte1 & 0x0f) << 8) | byte2) + 1;
+      let copyLength = (byte1 >> 4) + 2;
 
-        if (bufferNumber) {
-          bufferNumber += 2;
-        } else {
-          bufferNumber = buffer[bufferPosition]! + 0x12;
-          bufferPosition++;
-        }
-
-        for (let j = 0; j < bufferNumber; j++) {
-          resultBuffer[resultPosition] = resultBuffer[copySrc]!;
-          resultPosition++;
-          copySrc++;
-        }
+      if (copyLength < 3) {
+        copyLength = buffer[bufferPosition++]! + 0x12;
       }
 
-      bufferCode <<= 1;
+      while (copyLength--) {
+        resultArray[resultArray.length] =
+          resultArray[resultArray.length - copyDistance]!;
+      }
     }
-
-    if (bufferPosition >= bufferLength || resultPosition >= resultLength) {
-      break;
-    }
-
-    bufferCode = buffer[bufferPosition]!;
-    bufferPosition++;
   }
 
-  return resultBuffer;
+  return Buffer.from(resultArray);
 }

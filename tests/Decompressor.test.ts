@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 
-import { describe, expect, it, vitest } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { decompress } from "../src/index.js";
 
@@ -17,7 +17,7 @@ describe("decompressor", () => {
   const coverage2 = readFileSync(`${__dirname}/fixtures/coverage-2.bin`);
   const coverage3 = readFileSync(`${__dirname}/fixtures/coverage-3.bin`);
 
-  const samples = [
+  const fileSamples = [
     ["empty.yaz0", Buffer.from("")],
     ["hello.yaz0", helloBuffer],
     ["hello.l1.yaz0", helloBuffer],
@@ -44,27 +44,39 @@ describe("decompressor", () => {
     ["coverage-3.yaz0", coverage3],
   ] as const;
 
-  it.each(samples)("function decompress(%j)", (name, buffer) => {
+  it.each(fileSamples)("function decompress(file: %j)", (name, buffer) => {
     expect(
       decompress(readFileSync(`${__dirname}/fixtures/${name}`)),
     ).toStrictEqual(buffer);
   });
 
-  it('function decompress("fake.yaz0")', () => {
-    expect.assertions(2);
+  const directSamples = [
+    ["", ""],
+    ["\u00801", "1"],
+    ["\u00C012", "12"],
+    ["\u00E0123", "123"],
+    [
+      "\u00A0\u0000\u0010\u0000\u0001\u0030\u0003\u0010\u0008",
+      "\u0000\u0000\u0000\u0000\u0001\u0000\u0000\u0000\u0001\u0000\u0000\u0000\u0000",
+    ],
+    [
+      "\u00A8\u0000\u0010\u0000\u0001\u0050\u0003\u0000",
+      "\u0000\u0000\u0000\u0000\u0001\u0000\u0000\u0000\u0001\u0000\u0000\u0000\u0000",
+    ],
+  ] as const;
 
-    vitest.spyOn(process.stderr, "write").mockImplementationOnce((message) => {
-      expect(message).toContain("Invalid Yaz0 header!");
+  it.each(directSamples)(
+    "function decompress(buffer: %j, %j)",
+    (buffer, expected) => {
+      const bufferYaz = Buffer.allocUnsafe(16 + buffer.length);
 
-      return undefined as never;
-    });
+      bufferYaz.write("Yaz0\0\0\0\0\0\0\0\0\0\0\0\0");
+      bufferYaz.writeUInt32BE(expected.length, 4);
+      bufferYaz.write(buffer, 16, "binary");
 
-    vitest.spyOn(process, "exit").mockImplementationOnce((code) => {
-      expect(code).toBe(-1);
-
-      return undefined as never;
-    });
-
-    decompress(readFileSync(`${__dirname}/fixtures/fake.yaz0`));
-  });
+      expect(decompress(bufferYaz)).toStrictEqual(
+        Buffer.from(expected, "binary"),
+      );
+    },
+  );
 });
