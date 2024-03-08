@@ -20,12 +20,14 @@ export function CompressCommand(
   }
 
   const outputPath = normalize(output ?? `${input}.compressed`);
+  const inputContents = readFileSync(input);
 
   process.stdout.write(`Compressing ${normalize(input)} to ${outputPath}... `);
 
   const now = Date.now();
+  const result = compress(inputContents, options.level);
 
-  const result = compress(readFileSync(input), options.level);
+  process.stdout.write(`OK (${((Date.now() - now) / 1000).toFixed(2)}s)\n`);
 
   fs.writeFileSync(
     outputPath,
@@ -34,6 +36,4 @@ export function CompressCommand(
       Buffer.alloc(Math.max(0, options.width - result.length)),
     ]),
   );
-
-  process.stdout.write(`OK (${((Date.now() - now) / 1000).toFixed(2)}s)\n`);
 }

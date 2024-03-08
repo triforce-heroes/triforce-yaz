@@ -8,12 +8,27 @@ export function decompress(buffer: Buffer) {
   while (bufferPosition < bufferLength) {
     bufferHeader = buffer[bufferPosition++]!;
 
+    if (bufferHeader === 0xff) {
+      resultArray.push(
+        buffer[bufferPosition++]!,
+        buffer[bufferPosition++]!,
+        buffer[bufferPosition++]!,
+        buffer[bufferPosition++]!,
+        buffer[bufferPosition++]!,
+        buffer[bufferPosition++]!,
+        buffer[bufferPosition++]!,
+        buffer[bufferPosition++]!,
+      );
+
+      continue;
+    }
+
     for (
       let bufferHeaderPosition = 0;
       bufferHeaderPosition < 8 && bufferPosition < bufferLength;
       bufferHeaderPosition++
     ) {
-      if ((bufferHeader << bufferHeaderPosition) & 0x80) {
+      if (bufferHeader && (bufferHeader << bufferHeaderPosition) & 0x80) {
         resultArray[resultArray.length] = buffer[bufferPosition++]!;
 
         continue;
