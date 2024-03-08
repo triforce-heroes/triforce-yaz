@@ -31,8 +31,7 @@ function compressBufferZero(buffer: Buffer) {
 }
 
 function compressBuffer(buffer: Buffer, searchRange: number): Buffer {
-  const resultInstances: number[][] = [];
-  let resultBytes = 0;
+  const resultBytes: number[][] = [];
 
   let bufferPosition = buffer.length - 1;
 
@@ -74,14 +73,12 @@ function compressBuffer(buffer: Buffer, searchRange: number): Buffer {
           foundDistance--;
 
           if (foundLength < 0x12) {
-            resultBytes += 2;
-            resultInstances.push([
+            resultBytes.push([
               (foundDistance >> 8) | ((foundLength - 2) << 4),
               foundDistance & 0xff,
             ]);
           } else {
-            resultBytes += 3;
-            resultInstances.push([
+            resultBytes.push([
               foundDistance >> 8,
               foundDistance & 0xff,
               foundLength - 0x12,
@@ -93,54 +90,27 @@ function compressBuffer(buffer: Buffer, searchRange: number): Buffer {
       }
     }
 
-    resultBytes++;
-    resultInstances.push([buffer[bufferPosition--]!]);
+    resultBytes.push([buffer[bufferPosition--]!]);
   }
 
-  let resultPosition = 0;
+  const resultArray: number[] = [];
   let resultHeaderPosition = 0;
 
-  const resultBuffer = Buffer.allocUnsafe(
-    Math.ceil(resultInstances.length / 8) + resultBytes,
-  );
-
-  for (
-    let resultInstancesIndex = 0;
-    resultInstancesIndex < resultInstances.length;
-    resultInstancesIndex++
-  ) {
-    const resultInstance =
-      resultInstances[resultInstances.length - resultInstancesIndex - 1]!;
-    const resultHeader = resultInstancesIndex % 8 === 0;
-
-    if (resultHeader) {
-      resultBuffer.writeUInt8(0, resultPosition);
-      resultHeaderPosition = resultPosition++;
+  for (let resultByte = 1; resultByte <= resultBytes.length; resultByte++) {
+    if (resultByte % 8 === 1) {
+      resultArray[(resultHeaderPosition = resultArray.length)] = 0;
     }
 
-    if (resultInstance.length === 1) {
-      resultBuffer.writeUInt8(resultInstance[0]!, resultPosition);
-      resultBuffer[resultHeaderPosition] |=
-        1 << (7 - (resultInstancesIndex % 8));
-    } else if (resultInstance.length === 2) {
-      resultBuffer.writeUInt16BE(
-        (resultInstance[0]! << 8) | resultInstance[1]!,
-        resultPosition,
-      );
-    } else {
-      resultBuffer.writeUIntBE(
-        (resultInstance[0]! << 16) |
-          (resultInstance[1]! << 8) |
-          resultInstance[2]!,
-        resultPosition,
-        3,
-      );
-    }
+    const bytes = resultBytes[resultBytes.length - resultByte]!;
 
-    resultPosition += resultInstance.length;
+    resultArray.push(...bytes);
+
+    if (bytes.length === 1) {
+      resultArray[resultHeaderPosition] |= 1 << (7 - ((resultByte + 7) % 8));
+    }
   }
 
-  return resultBuffer;
+  return Buffer.from(resultArray);
 }
 
 export function compress(buffer: Buffer, level = CompressionLevel.L9): Buffer {
