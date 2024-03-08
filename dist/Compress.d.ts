@@ -1,3 +1,3 @@
 /// <reference types="node" resolution-mode="require"/>
 import { CompressionLevel } from "./types/CompressionLevel.js";
-export declare function compress(buffer: Buffer, level?: CompressionLevel): Buffer;
+export declare function compress(buffer: Buffer, level?: CompressionLevel, fast?: boolean): Buffer;

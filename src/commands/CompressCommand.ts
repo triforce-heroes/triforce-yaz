@@ -8,6 +8,7 @@ import { compress } from "../Compress.js";
 interface Options {
   level: number;
   width: number;
+  fast: boolean;
 }
 
 export function CompressCommand(
@@ -25,7 +26,7 @@ export function CompressCommand(
   process.stdout.write(`Compressing ${normalize(input)} to ${outputPath}... `);
 
   const now = Date.now();
-  const result = compress(inputContents, options.level);
+  const result = compress(inputContents, options.level, options.fast);
 
   process.stdout.write(`OK (${((Date.now() - now) / 1000).toFixed(2)}s)\n`);
 

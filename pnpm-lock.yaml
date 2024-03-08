@@ -16,7 +16,7 @@ devDependencies:
     version: 1.4.6
   '@triforce-heroes/triforce-core':
     specifier: github:triforce-heroes/triforce-core
-    version: github.com/triforce-heroes/triforce-core/c27e5c090e8e47d7b84ec48fe3afb630ed9d9acc(@aws-sdk/client-dynamodb@3.529.1)(@aws-sdk/client-s3@3.529.1)(@aws-sdk/credential-providers@3.529.1)(@aws-sdk/util-dynamodb@3.529.1)(commander@12.0.0)
+    version: github.com/triforce-heroes/triforce-core/0e2a9e333a1b2dcc1025335d197ffb8757b586ca(@aws-sdk/client-dynamodb@3.529.1)(@aws-sdk/client-s3@3.529.1)(@aws-sdk/credential-providers@3.529.1)(@aws-sdk/util-dynamodb@3.529.1)(commander@12.0.0)
   '@types/node':
     specifier: ^20.11.25
     version: 20.11.25
@@ -6091,12 +6091,13 @@ packages:
       is-weakref: 1.0.2
       isarray: 2.0.5
       which-boxed-primitive: 1.0.2
-      which-collection: 1.0.1
+      which-collection: 1.0.2
       which-typed-array: 1.1.14
     dev: true
 
-  /which-collection@1.0.1:
-    resolution: {integrity: sha512-W8xeTUwaln8i3K/cY1nGXzdnVZlidBcagyNFtBdD5kxnb4TvGKR7FfSIS3mYpwWS1QUCutfKz8IY8RjftB0+1A==}
+  /which-collection@1.0.2:
+    resolution: {integrity: sha512-K4jVyjnBdgvc86Y6BkaLZEN933SwYOuBFkdmBu9ZfkcAbdVbpITnDmjvZ/aQjRXQrv5EPkTnD1s39GiiqbngCw==}
+    engines: {node: '>= 0.4'}
     dependencies:
       is-map: 2.0.3
       is-set: 2.0.3
@@ -6219,9 +6220,9 @@ packages:
       - typescript
     dev: true
 
-  github.com/triforce-heroes/triforce-core/c27e5c090e8e47d7b84ec48fe3afb630ed9d9acc(@aws-sdk/client-dynamodb@3.529.1)(@aws-sdk/client-s3@3.529.1)(@aws-sdk/credential-providers@3.529.1)(@aws-sdk/util-dynamodb@3.529.1)(commander@12.0.0):
-    resolution: {tarball: https://codeload.github.com/triforce-heroes/triforce-core/tar.gz/c27e5c090e8e47d7b84ec48fe3afb630ed9d9acc}
-    id: github.com/triforce-heroes/triforce-core/c27e5c090e8e47d7b84ec48fe3afb630ed9d9acc
+  github.com/triforce-heroes/triforce-core/0e2a9e333a1b2dcc1025335d197ffb8757b586ca(@aws-sdk/client-dynamodb@3.529.1)(@aws-sdk/client-s3@3.529.1)(@aws-sdk/credential-providers@3.529.1)(@aws-sdk/util-dynamodb@3.529.1)(commander@12.0.0):
+    resolution: {tarball: https://codeload.github.com/triforce-heroes/triforce-core/tar.gz/0e2a9e333a1b2dcc1025335d197ffb8757b586ca}
+    id: github.com/triforce-heroes/triforce-core/0e2a9e333a1b2dcc1025335d197ffb8757b586ca
     name: '@triforce-heroes/triforce-core'
     version: 1.0.0
     peerDependencies:

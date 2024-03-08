@@ -13,6 +13,7 @@ export function makeProgram() {
     .argument("[output]", "output file")
     .option("-l, --level <number>", "compression level (0..9)", Number, 9)
     .option("-w, --width <number>", "minimum output width", Number, 0)
+    .option("-f, --fast", "disables slower compression methods", false)
     .action(CompressCommand);
 
   program
