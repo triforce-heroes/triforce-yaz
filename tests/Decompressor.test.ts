@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 
 import { describe, expect, it } from "vitest";
 
-import { decompress } from "../src/index.js";
+import { decompress } from "../src/Decompress.js";
 
 describe("decompressor", () => {
   const helloBuffer = Buffer.from(

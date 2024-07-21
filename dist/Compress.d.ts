@@ -1,4 +1,3 @@
-/// <reference types="node" resolution-mode="require"/>
 import { CompressionLevel } from "./types/CompressionLevel.js";
 interface CompressOptions {
     level?: CompressionLevel;

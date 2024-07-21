@@ -2,8 +2,8 @@ import { readFileSync } from "node:fs";
 
 import { describe, expect, it } from "vitest";
 
-import { compress } from "../src/index.js";
 import { CompressionLevel } from "../src/types/CompressionLevel.js";
+import { compress } from "../src/Compress.js";
 
 describe("compressor", () => {
   const helloBuffer = readFileSync(`${__dirname}/fixtures/hello.bin`);

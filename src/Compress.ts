@@ -167,7 +167,7 @@ function compressBuffer(
     resultArray.push(...bytes);
 
     if (bytes.length === 1) {
-      resultArray[resultHeaderPosition] |= 1 << (7 - ((resultByte + 7) % 8));
+      resultArray[resultHeaderPosition]! |= 1 << (7 - ((resultByte + 7) % 8));
     }
   }
 
